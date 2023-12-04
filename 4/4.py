@@ -5,10 +5,10 @@ def main():
             line = line.strip()
             all_nums = line.split(':')[1]
             wins = all_nums.split('|')[0].split()
-            loses = all_nums.split('|')[1].split()
+            mine = all_nums.split('|')[1].split()
             wins = set(wins)
             score = 0
-            for n in loses:
+            for n in mine:
                 if n in wins:
                     if score == 0:
                         score += 1
@@ -18,35 +18,30 @@ def main():
     print(res)
     
     res2 = 0
-    card_counts = {}
-    count_total = 0
+    multiplier = {}
     with open('4.in') as f:
         for line in f.readlines():
-            count_total += 1
             line = line.strip()
             card_num = line.split(':')[0].split()[1]
             all_nums = line.split(':')[1]
             wins = all_nums.split('|')[0].split()
-            loses = all_nums.split('|')[1].split()
+            mine = all_nums.split('|')[1].split()
             wins = set(wins)
-            if card_num not in card_counts:
-                card_counts[card_num] = 1
+            if card_num not in multiplier:
+                multiplier[card_num] = 1
             else:
-                card_counts[card_num] += 1
+                multiplier[card_num] += 1
             num_wins = 0
-            for n in loses:
+            for n in mine:
                 if n in wins:
                     num_wins += 1
             for i in range(int(card_num) + 1, int(card_num) + 1 + num_wins):
-                if str(i) in card_counts:
-                    card_counts[str(i)] += 1 * card_counts[card_num]
+                i = str(i)
+                if i not in multiplier:
+                    multiplier[i] = multiplier[card_num]
                 else:
-                    card_counts[str(i)] = 1 * card_counts[card_num]
-            print(card_counts)
-    for card in card_counts:
-        if int(card) > count_total:
-            break
-        res2 += card_counts[card]
+                    multiplier[i] += multiplier[card_num]
+            res2 += multiplier[card_num]
     print(res2)
 
 
