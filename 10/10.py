@@ -121,23 +121,37 @@ def part2():
                     if (dx and slots[grid[x][y]][2 - dx]) or (dy and slots[grid[x][y]][1 - dy]):
                         graph[(i, j)].append((x, y))
     
-    visited = set()
     path = set()
-    # use dfs to find loops in graph, and add elements of loop to path
-    def dfs(i, j, cur_path):
-        if (i, j) in cur_path:
-            path.update(cur_path)
-            return
-        if (i, j) in visited:
-            return
-        visited.add((i, j))
-        cur_path.add((i, j))
-        for x, y in graph[(i, j)]:
-            dfs(x, y, cur_path)
-        cur_path.remove((i, j))
-    
-    dfs(si, sj, set())
-    
+    prev = {}
+    # use bfs to find loops in graph, and add elements of loop to path
+    def bfs(i, j):
+        queue = deque()
+        queue.append((i, j))
+        seen = set()
+        seen.add((i, j))
+        prev[(i, j)] = None
+        while queue:
+            size = len(queue)
+            for _ in range(size):
+                i, j = queue.popleft()
+                last = (i, j)
+                for x, y in graph[(i, j)]:
+                    if (x, y) not in seen:
+                        queue.append((x, y))
+                        seen.add((x, y))
+                        prev[(x, y)] = (i, j)
+                    elif (x, y) in queue:
+                        temp = (i, j)
+                        while temp:
+                            path.add(temp)
+                            temp = prev[temp]
+        while last:
+            path.add(last)
+            last = prev[last]
+        return
+
+    bfs(si, sj)
+
     # count all "." enclosed by path
     res = 0
     odd = False
@@ -157,7 +171,7 @@ def part2():
                 elif grid[i][j] == 'L':
                     skip = '7'
                     odd = not odd
-            elif odd and grid[i][j] == '.':
+            elif odd:
                 skip = ''
                 res += 1
     print(res)
