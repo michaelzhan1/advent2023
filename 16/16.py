@@ -1,8 +1,7 @@
-from bisect import bisect_left
 from collections import defaultdict
 
 
-fname = 'test.in'
+fname = '16.in'
 
 
 def part1():
@@ -10,18 +9,7 @@ def part1():
         grid = [list(line.strip()) for line in f.readlines()]
     n = len(grid)
     m = len(grid[0])
-    right_list = defaultdict(list)
-    left_list = defaultdict(list)
-    up_list = defaultdict(list)
-    down_list = defaultdict(list)
-    for i in range(n):
-        for j in range(m):
-            if grid[i][j] != '.':
-                right_list[i].append((i, j, grid[i][j]))
-                left_list[i].insert(0, (i, j, grid[i][j]))
-                up_list[j].insert(0, (i, j, grid[i][j]))
-                down_list[j].append((i, j, grid[i][j]))
-    # for the direction that the light is traveling, bisect to find the index, then use that index
+
     energized = set()
     visited = set()
     stack = []
@@ -88,10 +76,88 @@ def part1():
     print(len(energized))
     
 
-
-
 def part2():
-    pass
+    with open(fname) as f:
+        grid = [list(line.strip()) for line in f.readlines()]
+    n = len(grid)
+    m = len(grid[0])
+
+    def get_energized(start_i, start_j, start_direction):
+        energized = set()
+        visited = set()
+        stack = []
+        stack.append((start_i, start_j, start_direction))
+        while stack:
+            i, j, direction = stack.pop()
+            if (i, j, direction) in visited:
+                continue
+            visited.add((i, j, direction))
+            energized.add((i, j))
+
+            new_directions = []
+            obj = grid[i][j]
+            if obj == '-':
+                if direction == 'right' or direction == 'left':
+                    new_directions.append(direction)
+                else:
+                    new_directions.append('left')
+                    new_directions.append('right')
+            elif obj == '|':
+                if direction == 'up' or direction == 'down':
+                    new_directions.append(direction)
+                else:
+                    new_directions.append('up')
+                    new_directions.append('down')
+            elif obj == '/':
+                if direction == 'right':
+                    new_directions.append('up')
+                elif direction == 'up':
+                    new_directions.append('right')
+                elif direction == 'left':
+                    new_directions.append('down')
+                elif direction == 'down':
+                    new_directions.append('left')
+            elif obj == '\\':
+                if direction == 'right':
+                    new_directions.append('down')
+                elif direction == 'down':
+                    new_directions.append('right')
+                elif direction == 'left':
+                    new_directions.append('up')
+                elif direction == 'up':
+                    new_directions.append('left')
+            elif obj == '.':
+                new_directions.append(direction)
+            
+            for new_direction in new_directions:
+                if new_direction == 'right':
+                    next_i = i
+                    next_j = j + 1
+                elif new_direction == 'up':
+                    next_i = i - 1
+                    next_j = j
+                elif new_direction == 'left':
+                    next_i = i
+                    next_j = j - 1
+                elif new_direction == 'down':
+                    next_i = i + 1
+                    next_j = j
+                    
+                if next_i < 0 or next_i >= n or next_j < 0 or next_j >= m:
+                    continue
+                stack.append((next_i, next_j, new_direction))    
+        return len(energized)
+
+    res = 0
+    for i in range(n):
+        res = max(res, get_energized(i, 0, 'right'))
+        res = max(res, get_energized(i, m - 1, 'left'))
+    
+    for j in range(m):
+        res = max(res, get_energized(0, j, 'down'))
+        res = max(res, get_energized(n - 1, j, 'up'))
+    
+    print(res)
 
 
 if __name__ == '__main__':
